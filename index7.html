@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movimiento Rectilíneo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.6.4/math.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #000000; 
+            color: #ffae00; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+        }
+        .calculator { 
+            border: 1px solid #ccc; 
+            padding: 20px; 
+            border-radius: 10px; 
+            width: 100%; 
+            max-width: 400px; 
+            background: #fff; 
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); 
+        }
+        .calculator input, .calculator button { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+            font-size: 1em; 
+            box-sizing: border-box;
+        }
+        .calculator button {
+            background-color: #ffc400;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .calculator button:hover {
+            background-color: #1e4e8c;
+        }
+        .result { 
+            font-weight: bold; 
+            color: #ffbb00; 
+            margin-top: 10px; 
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .example {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e2e8f0;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .error {
+            color: #dc2626;
+            background-color: #fee2e2;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Movimiento Rectilíneo</h1>
+    <div class="calculator">
+        <label for="velocity-function">Función de velocidad v(t):</label>
+        <input type="text" id="velocity-function" placeholder="Ej. 2*t + 3">
+        <label for="time-a">Tiempo inicial (t₀):</label>
+        <input type="number" id="time-a" value="0">
+        <label for="time-b">Tiempo final (t₁):</label>
+        <input type="number" id="time-b" value="5">
+        <button onclick="calculatePosition()">Calcular Desplazamiento</button>
+        <div class="result" id="result-output"></div>
+    </div>
+    <div class="example">
+        <h3>Ejemplos de uso:</h3>
+        <p>1. Función de velocidad: 2*t + 3</p>
+        <p>2. Función de velocidad: t^2</p>
+        <p>3. Función de velocidad: 5</p>
+        <p>4. Función de velocidad: sin(t)</p>
+    </div>
+
+    <script>
+        function calculatePosition() {
+            const velocityFunc = document.getElementById("velocity-function").value;
+            const t0 = parseFloat(document.getElementById("time-a").value);
+            const t1 = parseFloat(document.getElementById("time-b").value);
+
+            try {
+                // Validaciones
+                if (!velocityFunc) throw new Error("Por favor ingrese una función de velocidad.");
+                if (isNaN(t0)) throw new Error("Tiempo inicial no válido.");
+                if (isNaN(t1)) throw new Error("Tiempo final no válido.");
+                if (t1 <= t0) throw new Error("El tiempo final debe ser mayor al tiempo inicial.");
+
+                // Crear expresión simbólica para la integral
+                const expr = math.parse(velocityFunc);
+                
+                // Convertir a función de una variable
+                const f = expr.compile();
+                
+                // Calcular la integral usando el método del trapecio
+                const n = 1000; // número de subdivisiones
+                const dt = (t1 - t0) / n;
+                let sum = 0;
+                
+                for (let i = 0; i <= n; i++) {
+                    const t = t0 + i * dt;
+                    const factor = (i === 0 || i === n) ? 0.5 : 1;
+                    sum += factor * f.evaluate({t: t});
+                }
+                
+                const displacement = sum * dt;
+                
+                document.getElementById("result-output").innerHTML = 
+                    `El desplazamiento es: ${displacement.toFixed(4)} unidades`;
+                document.getElementById("result-output").classList.remove("error");
+            } catch (error) {
+                document.getElementById("result-output").innerHTML = 
+                    `Error: ${error.message}`;
+                document.getElementById("result-output").classList.add("error");
+            }
+        }
+
+        // Agregar evento para calcular con Enter
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculatePosition();
+            }
+        });
+    </script>
+</body>
+</html>
